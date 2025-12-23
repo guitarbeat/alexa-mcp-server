@@ -11,6 +11,9 @@ import { dndApp } from "./api/v1/dnd";
 import { alexaMcp } from "./mcp/server";
 import { Env } from "./types/env";
 
+// Store active transports in memory
+const transports = new Map<string, SSEServerTransport>();
+
 /**
  * Creates and configures the main Hono application.
  */
@@ -24,7 +27,7 @@ export function createServer() {
 
     app.get("/", (c) => c.json({
         name: "Alexa MCP Server",
-        version: "1.2.1",
+        version: "1.2.2",
         endpoints: { api: "/api", mcp: "/mcp", sse: "/sse" }
     }));
 
@@ -41,24 +44,56 @@ export function createServer() {
 
     // --- MCP Integration ---
 
-    // SSE Transport endpoint
-    // For Node.js (Render), we can access the raw response via c.env.incoming if using certain adapters,
-    // or better yet, use a dedicated transport that handles the request/response.
     app.get("/sse", async (c) => {
         const mcpServer = alexaMcp.getMcpServer();
-        // Use a more robust way to get Node's ServerResponse if available
-        const res = (c.env as any).outgoing || (c.executionCtx as any)?.res || (c.req.raw as any).res;
-        const transport = new SSEServerTransport("/api/mcp", res);
+
+        // In @hono/node-server, raw Node req/res are in c.env
+        const rawRes = (c.env as any).outgoing;
+        const rawReq = (c.env as any).incoming;
+
+        if (!rawRes || !rawReq) {
+            return c.text("SSE transport requires a Node.js environment (Hono node-server)", 500);
+        }
+
+        console.log("Creating new SSE transport...");
+        const transport = new SSEServerTransport("/api/mcp", rawRes);
         await mcpServer.connect(transport);
-        return c.body(null); // Transport handles the response
+
+        const sessionId = transport.sessionId;
+        console.log(`SSE connection established. Session: ${sessionId}`);
+
+        transports.set(sessionId, transport);
+
+        rawReq.on("close", () => {
+            console.log(`SSE connection closed for session: ${sessionId}`);
+            transports.delete(sessionId);
+        });
+
+        // We return a null body because transport.start() (via connect) handles the response headers and body
+        return new Response(null);
     });
 
     app.post("/api/mcp", async (c) => {
-        const mcpServer = alexaMcp.getMcpServer();
-        // For a single POST request in SSE transport, we need to find the correct session
-        // However, the SSEServerTransport usually handles its own POST endpoint.
-        // We can just proxy it or use the transport's handlePostMessage if available.
-        return c.text("MCP endpoint active");
+        const sessionId = c.req.query("sessionId");
+        if (!sessionId) {
+            return c.text("Missing sessionId", 400);
+        }
+
+        const transport = transports.get(sessionId);
+        if (!transport) {
+            console.error(`Session not found: ${sessionId}`);
+            return c.text("Session not found", 404);
+        }
+
+        const rawReq = (c.env as any).incoming;
+        const rawRes = (c.env as any).outgoing;
+
+        if (!rawReq || !rawRes) {
+            return c.text("POST hand-off requires a Node.js environment", 500);
+        }
+
+        await transport.handlePostMessage(rawReq, rawRes);
+        return new Response(null);
     });
 
     return app;
