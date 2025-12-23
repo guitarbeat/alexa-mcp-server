@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { streamSSE } from "hono/streaming";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { bedroomApp } from "./api/v1/bedroom";
 import { announceApp } from "./api/v1/announce";
 import { musicApp } from "./api/v1/music";
@@ -7,44 +9,28 @@ import { lightsApp } from "./api/v1/lights";
 import { volumeApp } from "./api/v1/volume";
 import { sensorsApp } from "./api/v1/sensors";
 import { dndApp } from "./api/v1/dnd";
-import { HomeIOMCP } from "./mcp/server";
-import { Env } from "./types/alexa";
+import { alexaMcp } from "./mcp/server";
+import { Env } from "./types/env";
 
 /**
  * Creates and configures the main Hono application.
- * This app is shared between Cloudflare Workers and Node.js entry points.
  */
 export function createServer() {
     const app = new Hono<{ Bindings: Env }>();
 
-    // Middleware
     app.use("*", cors());
 
-    // Base Information & Health
-    app.get("/", (context) => {
-        return context.json({
-            name: "Alexa MCP Server",
-            version: "1.2.0",
-            description: "Smart home automation bridge for AI agents via MCP",
-            endpoints: {
-                api: "/api",
-                mcp: "/mcp",
-                sse: "/sse",
-                health: "/health",
-            },
-        });
-    });
+    // Health check
+    app.get("/health", (c) => c.json({ status: "healthy", timestamp: new Date().toISOString() }));
 
-    app.get("/health", (context) => {
-        return context.json({
-            status: "healthy",
-            timestamp: new Date().toISOString(),
-        });
-    });
+    app.get("/", (c) => c.json({
+        name: "Alexa MCP Server",
+        version: "1.2.0",
+        endpoints: { api: "/api", mcp: "/mcp", sse: "/sse" }
+    }));
 
-    // API v1 Routes
+    // API Routes
     const api = new Hono<{ Bindings: Env }>();
-
     api.route("/bedroom", bedroomApp);
     api.route("/announce", announceApp);
     api.route("/music", musicApp);
@@ -52,33 +38,33 @@ export function createServer() {
     api.route("/volume", volumeApp);
     api.route("/sensors", sensorsApp);
     api.route("/dnd", dndApp);
-
     app.route("/api", api);
 
-    // MCP SSE endpoints
-    app.get("/sse", async (context) => {
-        return HomeIOMCP.serveSSE("/sse").fetch(
-            context.req.raw,
-            context.env,
-            {} as any
-        );
+    // --- MCP Integration ---
+
+    app.get("/sse", async (c) => {
+        const mcpServer = alexaMcp.getMcpServer();
+        const transport = new SSEServerTransport("/api/mcp", c.res.raw as any);
+        await mcpServer.connect(transport);
+
+        return streamSSE(c, async (stream) => {
+            c.res.headers.set("Content-Type", "text/event-stream");
+            c.res.headers.set("Cache-Control", "no-cache");
+            c.res.headers.set("Connection", "keep-alive");
+
+            // Transport will handle sending messages via c.res.raw
+            // We just need to keep the stream alive
+            while (true) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (stream.aborted) break;
+            }
+        });
     });
 
-    app.post("/sse/message", async (context) => {
-        return HomeIOMCP.serveSSE("/sse").fetch(
-            context.req.raw,
-            context.env,
-            {} as any
-        );
-    });
-
-    // MCP basic endpoint
-    app.all("/mcp", async (context) => {
-        return HomeIOMCP.serve("/mcp").fetch(
-            context.req.raw,
-            context.env,
-            {} as any
-        );
+    app.post("/api/mcp", async (c) => {
+        // This should be handled by the transport's post message handler
+        // But we can also use our handleRequest if it's simpler
+        return alexaMcp.handleRequest(c.req.raw, c.env);
     });
 
     return app;

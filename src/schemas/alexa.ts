@@ -345,6 +345,12 @@ export const AdjustVolumeSchema = z.object({
 	amount: z.number().min(-100).max(100).describe("Volume adjustment amount (-100 to +100)"),
 });
 
+export const SetDndStatusSchema = z.object({
+	deviceSerialNumber: z.string().optional().describe("Device serial number"),
+	deviceType: z.string().optional().describe("Device type"),
+	enabled: z.boolean().describe("Enable or disable Do Not Disturb"),
+});
+
 // Type exports using schema inference
 export type DeviceEntity = z.infer<typeof DeviceEntitySchema>;
 export type SmartHomeDevice = z.infer<typeof SmartHomeDeviceSchema>;
