@@ -26,8 +26,16 @@ import {
  */
 export class HomeIOMCP {
 	private server: McpServer;
+	private env: Env;
 
 	constructor() {
+		// Capture process.env for use in tool handlers
+		this.env = {
+			UBID_MAIN: process.env.UBID_MAIN || "",
+			AT_MAIN: process.env.AT_MAIN || "",
+			API_BASE: process.env.API_BASE || "",
+		};
+
 		this.server = new McpServer({
 			name: "Alexa Home Automation",
 			version: "1.2.1",
@@ -36,12 +44,14 @@ export class HomeIOMCP {
 	}
 
 	private registerTools() {
+		const env = this.env;
+
 		// Announcements
 		this.server.tool(
 			"alexa_announce",
 			"Send voice announcements to Alexa devices",
 			AlexaAnnounceSchema.shape,
-			(args, { env }: any) => announceAlexa(args, { env }),
+			(args) => announceAlexa(args, { env }),
 		);
 
 		// State Monitoring
@@ -49,42 +59,42 @@ export class HomeIOMCP {
 			"get_bedroom_state",
 			"Get bedroom sensors (temp, light, motion) and lighting status",
 			{},
-			(args, { env }: any) => getBedroomState(args, { env }),
+			(args) => getBedroomState(args, { env }),
 		);
 
 		this.server.tool(
 			"get_music_status",
 			"Get current track and playback info from Alexa",
 			{},
-			(args, { env }: any) => getMusicStatus(args, { env }),
+			(args) => getMusicStatus(args, { env }),
 		);
 
 		this.server.tool(
 			"get_all_sensor_data",
 			"List all available sensors and their basic capabilities",
 			{},
-			(args, { env }: any) => getAllSensorData(args, { env }),
+			(args) => getAllSensorData(args, { env }),
 		);
 
 		// Device Control
-		this.server.tool("list_lights", "List discovered lights and their IDs", {}, (args, { env }: any) => listLights(args, { env }));
-		this.server.tool("set_light_power", "Turn light ON or OFF", SetLightPowerSchema.shape, (args, { env }: any) => setLightPower(args, { env }));
-		this.server.tool("set_light_brightness", "Set light brightness (0-100)", SetLightBrightnessSchema.shape, (args, { env }: any) => setLightBrightness(args, { env }));
-		this.server.tool("set_light_color", "Set light color or temperature", SetLightColorSchema.shape, (args, { env }: any) => setLightColor(args, { env }));
+		this.server.tool("list_lights", "List discovered lights and their IDs", {}, (args) => listLights(args, { env }));
+		this.server.tool("set_light_power", "Turn light ON or OFF", SetLightPowerSchema.shape, (args) => setLightPower(args, { env }));
+		this.server.tool("set_light_brightness", "Set light brightness (0-100)", SetLightBrightnessSchema.shape, (args) => setLightBrightness(args, { env }));
+		this.server.tool("set_light_color", "Set light color or temperature", SetLightColorSchema.shape, (args) => setLightColor(args, { env }));
 
-		this.server.tool("get_device_volumes", "Show volume level for all devices", {}, (args, { env }: any) => getAllDeviceVolumes(args, { env }));
-		this.server.tool("set_device_volume", "Set absolute volume level (0-100)", SetVolumeSchema.shape, (args, { env }: any) => setVolume(args, { env }));
-		this.server.tool("adjust_device_volume", "Adjust volume relatively (-100 to 100)", AdjustVolumeSchema.shape, (args, { env }: any) => adjustVolume(args, { env }));
+		this.server.tool("get_device_volumes", "Show volume level for all devices", {}, (args) => getAllDeviceVolumes(args, { env }));
+		this.server.tool("set_device_volume", "Set absolute volume level (0-100)", SetVolumeSchema.shape, (args) => setVolume(args, { env }));
+		this.server.tool("adjust_device_volume", "Adjust volume relatively (-100 to 100)", AdjustVolumeSchema.shape, (args) => adjustVolume(args, { env }));
 
-		this.server.tool("get_dnd_status", "Get Do Not Disturb status", {}, (args, { env }: any) => getDndStatus(args, { env }));
-		this.server.tool("set_dnd_status", "Set Do Not Disturb status", SetDndStatusSchema.shape, (args, { env }: any) => setDndStatus(args, { env }));
+		this.server.tool("get_dnd_status", "Get Do Not Disturb status", {}, (args) => getDndStatus(args, { env }));
+		this.server.tool("set_dnd_status", "Set Do Not Disturb status", SetDndStatusSchema.shape, (args) => setDndStatus(args, { env }));
 
 		// Discovery
 		this.server.tool(
 			"list_smarthome_devices",
 			"Discover all devices and capabilities on the account",
 			{},
-			(args, { env }: any) => listSmartHomeDevices(args, { env }),
+			(args) => listSmartHomeDevices(args, { env }),
 		);
 	}
 

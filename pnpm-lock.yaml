@@ -36,9 +36,15 @@ importers:
       '@biomejs/biome':
         specifier: ^2.2.4
         version: 2.3.10
+      '@types/eventsource':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@types/node':
         specifier: ^24.5.2
         version: 24.10.4
+      eventsource:
+        specifier: ^4.1.0
+        version: 4.1.0
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -466,6 +472,10 @@ packages:
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
 
+  '@types/eventsource@3.0.0':
+    resolution: {integrity: sha512-yEhFj31FTD29DtNeqePu+A+lD6loRef6YOM5XfN1kUwBHyy2DySGlA3jJU+FbQSkrfmlBVluf2Dub/OyReFGKA==}
+    deprecated: This is a stub types definition. eventsource provides its own type definitions, so you do not need this installed.
+
   '@types/express-serve-static-core@5.1.0':
     resolution: {integrity: sha512-jnHMsrd0Mwa9Cf4IdOzbz543y4XJepXrbia2T4b6+spXC2We3t1y6K44D3mR8XMFSXMCf3/l7rCgddfx7UNVBA==}
 
@@ -703,6 +713,10 @@ packages:
   eventsource@3.0.7:
     resolution: {integrity: sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==}
     engines: {node: '>=18.0.0'}
+
+  eventsource@4.1.0:
+    resolution: {integrity: sha512-2GuF51iuHX6A9xdTccMTsNb7VO0lHZihApxhvQzJB5A03DvHDd2FQepodbMaztPBmBcE/ox7o2gqaxGhYB9LhQ==}
+    engines: {node: '>=20.0.0'}
 
   exit-hook@2.2.1:
     resolution: {integrity: sha512-eNTPlAD67BmP31LDINZ3U7HSF8l57TxOY2PmBJ1shpCvpnxBF93mWCE8YHBnXs8qiUZJc9WDcWIeC3a2HIAMfw==}
@@ -1513,6 +1527,10 @@ snapshots:
     dependencies:
       '@types/node': 24.10.4
 
+  '@types/eventsource@3.0.0':
+    dependencies:
+      eventsource: 4.1.0
+
   '@types/express-serve-static-core@5.1.0':
     dependencies:
       '@types/node': 24.10.4
@@ -1770,6 +1788,10 @@ snapshots:
   eventsource-parser@3.0.6: {}
 
   eventsource@3.0.7:
+    dependencies:
+      eventsource-parser: 3.0.6
+
+  eventsource@4.1.0:
     dependencies:
       eventsource-parser: 3.0.6
 
