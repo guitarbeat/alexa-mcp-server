@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: alexa-mcp-server
+    runtime: node
+    plan: free
+    region: oregon # Or user's preferred region
+    buildCommand: pnpm install && pnpm run build
+    startCommand: pnpm run start:node
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: API_BASE
+        sync: false # User will set this after initial deploy
+      - key: UBID_MAIN
+        sync: false
+      - key: AT_MAIN
+        sync: false
+      - key: TZ
+        value: America/New_York
+    healthCheckPath: /health
