@@ -26,6 +26,6 @@ const port = Number(process.env.PORT) || 8787;
 console.log(`🚀 Alexa MCP Server is running on http://localhost:${port}`);
 
 serve({
-    fetch: (request) => app.fetch(request, env),
+    fetch: (request, nodeEnv) => app.fetch(request, { ...nodeEnv, ...env }),
     port,
 });
