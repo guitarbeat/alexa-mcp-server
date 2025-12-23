@@ -30,7 +30,7 @@ export class HomeIOMCP {
 	constructor() {
 		this.server = new McpServer({
 			name: "Alexa Home Automation",
-			version: "1.2.0",
+			version: "1.2.1",
 		});
 		this.registerTools();
 	}
@@ -89,16 +89,9 @@ export class HomeIOMCP {
 	}
 
 	/**
-	 * Handles a single MCP request (POST /mcp)
+	 * Returns the underlying McpServer instance.
 	 */
-	async handleRequest(request: Request, env: Env) {
-		return this.server.handleRequest(request, { env });
-	}
-
-	/**
-	 * Returns the underlying McpServer instance for SSE transport integration.
-	 */
-	getMcpServer() {
+	getMcpServer(): McpServer {
 		return this.server;
 	}
 }
