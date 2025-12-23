@@ -1,62 +1,43 @@
 import type { z } from "zod";
 import { AlexaAnnounceSchema } from "@/schemas/alexa";
 
-export const announceAlexaSchema = AlexaAnnounceSchema;
-
-export async function announceAlexa(args: z.infer<typeof announceAlexaSchema>, ctx?: any) {
+export async function announceAlexa(args: z.infer<typeof AlexaAnnounceSchema>, context: { env: any }) {
 	const { name, message } = args;
-
-	// Access environment variables from context
-	const apiBase = ctx?.env?.API_BASE;
+	const apiBase = context.env?.API_BASE;
 
 	if (!apiBase) {
 		return {
-			content: [
-				{
-					type: "text" as const,
-					text: "ERROR: API_BASE environment variable is required but not found in context or process.env",
-				},
-			],
+			content: [{ type: "text" as const, text: "Error: API_BASE not configured." }],
 			isError: true,
 		};
 	}
 
-	const response = await fetch(`${apiBase}/api/announce`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			name,
-			message,
-		}),
-	});
+	try {
+		const response = await fetch(`${apiBase}/api/announce`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ name, message }),
+		});
 
-	if (!response.ok) {
-		const errorText = await response.text().catch(() => "Unknown error");
-		throw new Error(`Announcement failed: ${response.status} - ${errorText}`);
-	}
+		if (!response.ok) {
+			const errorText = await response.text().catch(() => "Unknown error");
+			return {
+				content: [{ type: "text" as const, text: `Announcement failed: ${response.status} - ${errorText}` }],
+				isError: true,
+			};
+		}
 
-	const result = (await response.json()) as { playbackStatus?: string; deliveredTime?: string };
-
-	return {
-		content: [
-			{
+		const result = (await response.json()) as any;
+		return {
+			content: [{
 				type: "text" as const,
-				text: JSON.stringify(
-					{
-						success: true,
-						playbackStatus: result.playbackStatus,
-						deliveredTime: result.deliveredTime,
-						announcement: {
-							name,
-							message,
-						},
-					},
-					null,
-					2,
-				),
-			},
-		],
-	};
+				text: `Announcement sent successfully.\nStatus: ${result.status}\nDelivered: ${result.deliveredAt || "N/A"}`,
+			}],
+		};
+	} catch (error) {
+		return {
+			content: [{ type: "text" as const, text: `Network error during announcement: ${(error as Error).message}` }],
+			isError: true,
+		};
+	}
 }

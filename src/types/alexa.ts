@@ -2,7 +2,10 @@ import { z } from "zod";
 
 // Environment validation schema
 export const EnvSchema = z.object({
-	ALEXA_COOKIES: z.string().min(1, "ALEXA_COOKIES is required"),
+	UBID_MAIN: z.string().min(1, "UBID_MAIN is required"),
+	AT_MAIN: z.string().min(1, "AT_MAIN is required"),
+	API_BASE: z.string().optional(),
+	ALEXA_COOKIES: z.string().optional(),
 	API_KEY: z.string().optional(),
 	TZ: z.string().optional(),
 	SPOTIFY_TOKEN: z.string().optional(),

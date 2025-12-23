@@ -10,17 +10,24 @@
 		"lint:fix": "biome lint --fix",
 		"start": "wrangler dev",
 		"cf-typegen": "wrangler types",
-		"type-check": "tsc --noEmit"
+		"type-check": "tsc --noEmit",
+		"build": "tsc",
+		"start:node": "tsx src/node-index.ts",
+		"dev:node": "tsx --watch src/node-index.ts",
+		"get-cookies": "tsx scripts/get-cookies.ts"
 	},
 	"dependencies": {
+		"@hono/node-server": "^1.19.7",
 		"@modelcontextprotocol/sdk": "1.18.0",
 		"agents": "0.1.4",
+		"alexa-cookie2": "^5.0.3",
 		"hono": "^4.9.9",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.4",
 		"@types/node": "^24.5.2",
+		"tsx": "^4.21.0",
 		"typescript": "5.9.2",
 		"wrangler": "^4.40.2"
 	}

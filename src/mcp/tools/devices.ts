@@ -1,77 +1,40 @@
 import { getCustomerSmartHomeEndpoints } from "@/utils/alexa-dynamic";
 
-export const listSmartHomeDevicesSchema = {};
-
-export async function listSmartHomeDevices(_args: Record<string, never>, ctx?: any) {
-	if (!ctx?.env?.UBID_MAIN || !ctx?.env?.AT_MAIN) {
+/**
+ * Lists all smart home devices and their capabilities.
+ */
+export async function listSmartHomeDevices(_args: any, context: { env: any }) {
+	if (!context.env?.UBID_MAIN || !context.env?.AT_MAIN) {
 		return {
-			content: [
-				{
-					type: "text" as const,
-					text: "ERROR: Missing UBID_MAIN or AT_MAIN in environment.",
-				},
-			],
+			content: [{ type: "text" as const, text: "Error: Missing Amazon authentication cookies." }],
 			isError: true,
 		};
 	}
 
 	try {
-		const endpoints = await getCustomerSmartHomeEndpoints(ctx.env);
-		
+		const endpoints = await getCustomerSmartHomeEndpoints(context.env);
+
 		const devices = endpoints.map((endpoint: any) => ({
-			endpointId: endpoint.endpointId,
-			friendlyName: endpoint.friendlyName,
+			name: endpoint.friendlyName,
 			category: endpoint.displayCategories?.primary?.value || "UNKNOWN",
-			allCategories: endpoint.displayCategories?.all?.map((cat: any) => cat.value) || [],
-			deviceType: endpoint.legacyIdentifiers?.dmsIdentifier?.deviceType?.value?.text,
-			serialNumber: endpoint.legacyIdentifiers?.dmsIdentifier?.deviceSerialNumber?.value?.text,
-			entityId: endpoint.legacyIdentifiers?.chrsIdentifier?.entityId,
-			applianceId: endpoint.legacyAppliance?.applianceId,
-			manufacturerName: endpoint.legacyAppliance?.manufacturerName,
-			modelName: endpoint.legacyAppliance?.modelName,
 			description: endpoint.legacyAppliance?.friendlyDescription,
-			connectedVia: endpoint.legacyAppliance?.connectedVia,
-			isEnabled: endpoint.legacyAppliance?.isEnabled,
-			reachability: endpoint.legacyAppliance?.applianceNetworkState?.reachability,
+			isOnline: endpoint.legacyAppliance?.applianceNetworkState?.reachability === "REACHABLE",
 			capabilities: endpoint.legacyAppliance?.capabilities?.map((cap: any) => cap.interfaceName) || [],
-			lastSeen: endpoint.legacyAppliance?.applianceNetworkState?.lastSeenAt 
-				? new Date(endpoint.legacyAppliance.applianceNetworkState.lastSeenAt).toISOString()
-				: null,
 		}));
 
-		const summary = {
-			totalDevices: devices.length,
-			devicesByCategory: devices.reduce((acc: any, device: any) => {
-				acc[device.category] = (acc[device.category] || 0) + 1;
-				return acc;
-			}, {}),
-			onlineDevices: devices.filter((d: any) => d.reachability === "REACHABLE").length,
-		};
+		const summary = [
+			`Total Devices: ${devices.length}`,
+			`Online: ${devices.filter((d: any) => d.isOnline).length}`,
+			"",
+			...devices.map((d: any) => `- ${d.name} (${d.category}): ${d.isOnline ? "Online" : "Offline"}`),
+		].join("\n");
 
 		return {
-			content: [
-				{
-					type: "text" as const,
-					text: JSON.stringify(
-						{
-							summary,
-							devices,
-							lastUpdate: new Date().toISOString(),
-						},
-						null,
-						2,
-					),
-				},
-			],
+			content: [{ type: "text" as const, text: summary }],
 		};
 	} catch (error) {
 		return {
-			content: [
-				{
-					type: "text" as const,
-					text: `Failed to list smart home devices: ${error instanceof Error ? error.message : "Unknown error"}`,
-				},
-			],
+			content: [{ type: "text" as const, text: `Discovery failed: ${(error as Error).message}` }],
 			isError: true,
 		};
 	}

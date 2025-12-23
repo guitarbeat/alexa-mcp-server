@@ -1,71 +1,66 @@
-# Minimal Setup Guide
+# Setup & Deployment Guide 🛠️
 
-Super simple setup - just paste 2 cookie values from Amazon.com!
+Follow these steps to get your Alexa MCP server running in your preferred environment.
 
-## Quick Setup (2 minutes)
+## 1. Local Setup
 
-1. **Login to amazon.com** in your browser
+### Authentication
+The server requires Amazon session cookies. We provide a script to automate this:
 
-2. **Open DevTools** (F12) → Network tab
-
-3. **Find any request** and copy these 2 cookie values:
-   - `ubid-main=133-678-78910` 
-   - `at-main=Atza|IwEBIA-fRecN...` (long token)
-
-4. **Configure:**
+1. Clone the repository and install dependencies:
    ```bash
-   cp .env.example .env
-   # Edit .env - just paste the 2 values!
+   git clone https://github.com/sijan2/alexa-mcp-server.git
+   cd alexa-mcp-server
+   pnpm install
    ```
 
-5. **Deploy:**
+2. Run the collector:
    ```bash
-   pnpm install && pnpm run deploy
+   pnpm run get-cookies
+   ```
+   *Follow the prompts and log in to your Amazon account.*
+
+### Running the Server
+```bash
+pnpm run dev:node
+```
+
+## 2. Docker Deployment (Recommended for Servers)
+
+We provide a production-ready Dockerfile.
+
+1. Build the image:
+   ```bash
+   docker build -t alexa-mcp-server .
    ```
 
-## Local Development & Testing
-
-### Running Locally
-1. Start development server: `pnpm dev`
-2. Server runs at `localhost:8787`
-
-### Testing with MCP Inspector
-1. Run MCP Inspector: `pnpm dlx @modelcontextprotocol/inspector@latest`
-2. Use SSE endpoint: `http://localhost:8787/sse`
-3. Test MCP server functionality through the inspector
-
-### Deployment to Cloudflare
-1. Deploy: `wrangler deploy`
-2. Add secrets to deployed worker:
+2. Run the container:
    ```bash
-   wrangler secret put UBID_MAIN
-   wrangler secret put AT_MAIN
+   docker run -p 3001:3001 --env-file .env alexa-mcp-server
    ```
-3. Use the provided base URL as your `API_BASE`
 
-**That's it!** The server automatically builds proper cookies with `csrf=1`
+## 3. Remote Deployment (Render, Railway, etc.)
 
-## What Works
+The server is compatible with any Node.js hosting platform.
 
-| Feature | Amazon.com Cookies | Alexa App Cookies |
-|---------|-------------------|-------------------|
-| Account Info | ✅ | ✅ |
-| Device Control | ✅ | ✅ |
-| Smart Home | ✅ | ✅ |
-| Music Info | ✅ | ✅ |
-| Announcements | ❌ | ✅ |
+- **Start Command**: `pnpm run start:node` (Make sure to run `pnpm run build` first).
+- **Environment Variables**:
+  - `UBID_MAIN`: (From your `.env`)
+  - `AT_MAIN`: (From your `.env`)
+  - `API_BASE`: The public URL of your deployment (e.g., `https://your-app.render.com`).
+  - `PORT`: 3001 (or as required by provider).
 
-## Authentication Details
+## 4. Cloudflare Workers
 
-The server automatically detects your cookie type and:
+To deploy to Cloudflare:
+```bash
+pnpm run deploy
+```
+*Note: Ensure you set your secrets using `wrangler secret put`*.
 
-- **Amazon.com cookies**: Uses CSRF format for web APIs
-- **Alexa app cookies**: Uses mobile authentication format  
-- **Auto-discovery**: Dynamically finds your devices and account ID
-- **Caching**: Reduces API calls with 5-minute cache
+---
 
-## Troubleshooting
+### Troubleshooting
 
-- **403/401 errors**: Cookies expired, get fresh ones
-- **Device not found**: Wait 1-2 minutes for discovery cache
-- **Announcements fail**: Need Alexa app cookies (amazon.com limited)
+- **Authentication Errors**: Cookies expire. If you see `401` or `Unauthorized` errors, re-run `pnpm run get-cookies`.
+- **Discovery Issues**: If specific devices aren't found, ensure they are properly registered found in the Alexa app on your phone first.

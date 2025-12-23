@@ -1,161 +1,69 @@
 import type { z } from "zod";
-import { AllDeviceVolumesSchema, SetVolumeSchema, AdjustVolumeSchema } from "@/schemas/alexa";
+import { SetVolumeSchema, AdjustVolumeSchema } from "@/schemas/alexa";
 
-export const getAllDeviceVolumesSchema = AllDeviceVolumesSchema;
-export const setVolumeSchema = SetVolumeSchema;
-export const adjustVolumeSchema = AdjustVolumeSchema;
+/**
+ * Lists current volume levels for all devices.
+ */
+export async function getAllDeviceVolumes(_args: any, context: { env: any }) {
+	const apiBase = context.env?.API_BASE;
+	if (!apiBase) return { content: [{ type: "text" as const, text: "Error: API_BASE not configured." }], isError: true };
 
-export async function getAllDeviceVolumes(_args: Record<string, never>, ctx?: any) {
-	// Access environment variables from context
-	const apiBase = ctx?.env?.API_BASE;
+	try {
+		const response = await fetch(`${apiBase}/api/volume`, { method: "GET" });
+		if (!response.ok) throw new Error(`Get volumes failed: ${response.status}`);
 
-	if (!apiBase) {
+		const { volumes = [] } = (await response.json()) as any;
 		return {
-			content: [
-				{
-					type: "text" as const,
-					text: "ERROR: API_BASE environment variable is required but not found in context or process.env",
-				},
-			],
-			isError: true,
-		};
-	}
-
-	const response = await fetch(`${apiBase}/api/volume`, {
-		method: "GET",
-	});
-
-	if (!response.ok) {
-		const errorText = await response.text().catch(() => "Unknown error");
-		throw new Error(`Get volumes failed: ${response.status} - ${errorText}`);
-	}
-
-	const result = await response.json();
-
-	return {
-		content: [
-			{
+			content: [{
 				type: "text" as const,
-				text: JSON.stringify(result, null, 2),
-			},
-		],
-	};
+				text: volumes.length > 0
+					? "Current Volume Levels:\n" + volumes.map((v: any) => `- ${v.deviceName || 'Device'}: ${v.speakerVolume}%`).join("\n")
+					: "No devices with volume control found.",
+			}],
+		};
+	} catch (error) {
+		return { content: [{ type: "text" as const, text: `Error: ${(error as Error).message}` }], isError: true };
+	}
 }
 
-export async function setVolume(args: z.infer<typeof setVolumeSchema>, ctx?: any) {
-	const { deviceType, dsn, volume } = args;
+/**
+ * Sets an absolute volume (0-100).
+ */
+export async function setVolume(args: z.infer<typeof SetVolumeSchema>, context: { env: any }) {
+	const apiBase = context.env?.API_BASE;
+	if (!apiBase) return { content: [{ type: "text" as const, text: "Error: API_BASE not configured." }], isError: true };
 
-	// Access environment variables from context
-	const apiBase = ctx?.env?.API_BASE;
+	try {
+		const response = await fetch(`${apiBase}/api/volume/set`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(args),
+		});
 
-	if (!apiBase) {
-		return {
-			content: [
-				{
-					type: "text" as const,
-					text: "ERROR: API_BASE environment variable is required but not found in context or process.env",
-				},
-			],
-			isError: true,
-		};
+		if (!response.ok) throw new Error(`Set volume failed: ${response.status}`);
+		return { content: [{ type: "text" as const, text: `Volume set to ${args.volume}%.` }] };
+	} catch (error) {
+		return { content: [{ type: "text" as const, text: `Error: ${(error as Error).message}` }], isError: true };
 	}
-
-	const response = await fetch(`${apiBase}/api/volume/set`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			deviceType,
-			dsn,
-			volume,
-		}),
-	});
-
-	if (!response.ok) {
-		const errorText = await response.text().catch(() => "Unknown error");
-		throw new Error(`Set volume failed: ${response.status} - ${errorText}`);
-	}
-
-	const result = await response.json();
-
-	return {
-		content: [
-			{
-				type: "text" as const,
-				text: JSON.stringify(
-					{
-						success: true,
-						...(result as any),
-						request: {
-							deviceType,
-							dsn,
-							volume,
-						},
-					},
-					null,
-					2,
-				),
-			},
-		],
-	};
 }
 
-export async function adjustVolume(args: z.infer<typeof adjustVolumeSchema>, ctx?: any) {
-	const { deviceType, dsn, amount } = args;
+/**
+ * Adjusts volume by a relative amount (-100 to +100).
+ */
+export async function adjustVolume(args: z.infer<typeof AdjustVolumeSchema>, context: { env: any }) {
+	const apiBase = context.env?.API_BASE;
+	if (!apiBase) return { content: [{ type: "text" as const, text: "Error: API_BASE not configured." }], isError: true };
 
-	// Access environment variables from context
-	const apiBase = ctx?.env?.API_BASE;
+	try {
+		const response = await fetch(`${apiBase}/api/volume/adjust`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(args),
+		});
 
-	if (!apiBase) {
-		return {
-			content: [
-				{
-					type: "text" as const,
-					text: "ERROR: API_BASE environment variable is required but not found in context or process.env",
-				},
-			],
-			isError: true,
-		};
+		if (!response.ok) throw new Error(`Adjust volume failed: ${response.status}`);
+		return { content: [{ type: "text" as const, text: `Volume adjusted by ${args.amount}%.` }] };
+	} catch (error) {
+		return { content: [{ type: "text" as const, text: `Error: ${(error as Error).message}` }], isError: true };
 	}
-
-	const response = await fetch(`${apiBase}/api/volume/adjust`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			deviceType,
-			dsn,
-			amount,
-		}),
-	});
-
-	if (!response.ok) {
-		const errorText = await response.text().catch(() => "Unknown error");
-		throw new Error(`Adjust volume failed: ${response.status} - ${errorText}`);
-	}
-
-	const result = await response.json();
-
-	return {
-		content: [
-			{
-				type: "text" as const,
-				text: JSON.stringify(
-					{
-						success: true,
-						...(result as any),
-						request: {
-							deviceType,
-							dsn,
-							amount,
-						},
-					},
-					null,
-					2,
-				),
-			},
-		],
-	};
 }
