@@ -1,16 +1,13 @@
 services:
   - type: web
     name: alexa-mcp-server
-    runtime: node
-    plan: free
-    region: oregon # Or user's preferred region
-    buildCommand: pnpm install && pnpm run build
-    startCommand: pnpm run start:node
+    env: docker
+    dockerfilePath: Dockerfile
     envVars:
       - key: PORT
-        value: 3001
+        value: 10000
       - key: API_BASE
-        sync: false # User will set this after initial deploy
+        sync: false
       - key: UBID_MAIN
         sync: false
       - key: AT_MAIN

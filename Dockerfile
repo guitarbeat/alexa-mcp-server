@@ -1,16 +1,32 @@
-FROM node:20-slim AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+# ---- Builder ----
+FROM node:20-alpine AS builder
 
-FROM base AS build
-COPY . /usr/src/app
-WORKDIR /usr/src/app
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm run type-check
+WORKDIR /app
 
-FROM base
-COPY --from=build /usr/src/app /usr/src/app
-WORKDIR /usr/src/app
-EXPOSE 8787
-CMD [ "pnpm", "start:node" ]
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY . ./
+RUN pnpm run build
+
+# ---- Release ----
+FROM node:20-alpine AS release
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/dist ./dist
+
+ENV NODE_ENV=production
+
+RUN pnpm install --prod --frozen-lockfile
+
+EXPOSE 10000
+ENTRYPOINT ["node", "dist/express-index.js"]

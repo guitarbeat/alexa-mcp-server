@@ -11,7 +11,7 @@
 		"start": "wrangler dev",
 		"cf-typegen": "wrangler types",
 		"type-check": "tsc --noEmit",
-		"build": "tsc",
+		"build": "tsc -p tsconfig.build.json",
 		"start:node": "tsx src/express-index.ts",
 		"dev:node": "tsx --watch src/express-index.ts",
 		"get-cookies": "tsx scripts/get-cookies.ts"

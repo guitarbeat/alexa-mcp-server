@@ -180,4 +180,4 @@ dist
 
 #claude
 .claude/
-.vscode/
+.vscode/dist/
