@@ -73,6 +73,12 @@ This project is built using:
 - **MCP SDK**: To enable seamless integration with AI agents.
 - **Cloudflare Workers Ready**: Can be deployed to Cloudflare or any Node.js environment via Docker.
 
+## ☕ Support
+
+If you find this project helpful, consider buying me a coffee!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/guitarbeat)
+
 ## 📄 License
 
-MIT © [sijan2](https://github.com/sijan2)
+MIT © [guitarbeat](https://github.com/guitarbeat)
