@@ -74,6 +74,7 @@ alexa-mcp-server/
 ### 1. Main Entry Point (`src/index.ts`)
 
 The Cloudflare Worker handles two primary responsibilities:
+
 - **MCP Protocol**: Serves MCP clients via SSE (`/sse`) and HTTP (`/mcp`) endpoints
 - **REST API**: Provides HTTP endpoints mirroring the alexa-temp API for direct access
 
@@ -81,18 +82,18 @@ The Cloudflare Worker handles two primary responsibilities:
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
-    
+
     // MCP Protocol endpoints
-    if (url.pathname === "/sse") {
-      return AlexaMCP.serveSSE("/sse").fetch(request, env, ctx);
+    if (url.pathname === '/sse') {
+      return AlexaMCP.serveSSE('/sse').fetch(request, env, ctx);
     }
-    if (url.pathname === "/mcp") {
-      return AlexaMCP.serve("/mcp").fetch(request, env, ctx);
+    if (url.pathname === '/mcp') {
+      return AlexaMCP.serve('/mcp').fetch(request, env, ctx);
     }
-    
+
     // REST API endpoints
     return app.fetch(request, env, ctx);
-  }
+  },
 };
 ```
 
@@ -103,8 +104,8 @@ The core MCP server class extending `McpAgent` from the `agents` package:
 ```typescript
 export class AlexaMCP extends McpAgent {
   server = new McpServer({
-    name: "Alexa Home Automation",
-    version: "1.0.0",
+    name: 'Alexa Home Automation',
+    version: '1.0.0',
   });
 
   async init() {
@@ -128,10 +129,10 @@ Each MCP tool follows a consistent pattern:
 ```typescript
 // Tool registration in server.ts
 this.server.tool(
-  "tool_name",
-  "Human-readable description for AI agents",
+  'tool_name',
+  'Human-readable description for AI agents',
   zodValidationSchema,
-  toolImplementationFunction
+  toolImplementationFunction,
 );
 
 // Tool implementation in src/mcp/tools/
@@ -154,31 +155,39 @@ Handles communication with external APIs:
 ## MCP Tools Exposed
 
 ### Announcement Tools
+
 - `alexa_announce(name, message, ssml?)` - Send voice announcements to Echo devices
 - `announcement_template(situation, urgency)` - Generate contextual announcement text
 
 ### Light Control Tools
+
 - `list_lights()` - Get all available smart lights and their capabilities
 - `set_light_power(id, on, transitionMs?)` - Turn lights on/off with optional transition
 - `set_light_brightness(id, level, transitionMs?)` - Set brightness level (0-100%)
 - `set_light_color(id, mode, value, transitionMs?)` - Set color by name, hex, HSV, or Kelvin
 
 ### Bedroom Monitoring Tools
+
 - `get_bedroom_state()` - Temperature, illuminance, and light status for context-aware decisions
 
 ### Music Status Tools
+
 - `get_music_status()` - Current playback status from Alexa/Spotify integration
 
 ### Device Management Tools
+
 - Device control and management capabilities
 
-### Do Not Disturb Tools  
+### Do Not Disturb Tools
+
 - `set_dnd(enabled)` - Control Do Not Disturb mode for devices
 
 ### Sensor Tools
+
 - `get_sensor_data()` - Access various sensor readings
 
 ### Volume Control Tools
+
 - `set_volume(level)` - Control device volume levels
 
 ## MCP Resources (Live Context)
@@ -195,11 +204,13 @@ Provide real-time context for AI decision-making:
 The server supports both standard MCP transport protocols:
 
 ### Server-Sent Events (SSE) - `/sse`
+
 - Widely supported by current MCP clients
 - Real-time bidirectional communication
 - Automatic reconnection handling
 
 ### Streamable HTTP - `/mcp`
+
 - Newer MCP standard
 - Simplified request/response model
 - Better for stateless interactions
@@ -207,6 +218,8 @@ The server supports both standard MCP transport protocols:
 ## Authentication & Security
 
 ### Environment Variables
+
 ```bash
 # Required for Alexa API integration
 ALEXA_COOKIES="session_cookies_from_alexa_app"
+```

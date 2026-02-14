@@ -1,4 +1,4 @@
-import { createServer } from "./app";
+import { createServer } from './app';
 
 /**
  * Cloudflare Workers Entry Point
@@ -6,5 +6,5 @@ import { createServer } from "./app";
 const app = createServer();
 
 export default {
-	fetch: app.fetch,
+  fetch: app.fetch,
 };

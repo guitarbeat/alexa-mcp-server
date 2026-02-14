@@ -1,39 +1,52 @@
 {
-	"name": "alexa-mcp-server",
-	"version": "1.0.0",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"deploy": "wrangler deploy",
-		"dev": "wrangler dev",
-		"format": "biome format --write",
-		"lint": "biome lint",
-		"lint:fix": "biome lint --fix",
-		"start": "wrangler dev",
-		"cf-typegen": "wrangler types",
-		"type-check": "tsc --noEmit",
-		"build": "tsc -p tsconfig.build.json",
-		"start:node": "tsx src/express-index.ts",
-		"dev:node": "tsx --watch src/express-index.ts",
-		"get-cookies": "tsx scripts/get-cookies.ts"
-	},
-	"dependencies": {
-		"@hono/node-server": "^1.19.7",
-		"@modelcontextprotocol/sdk": "1.25.1",
-		"@types/express": "^5.0.6",
-		"alexa-cookie2": "^5.0.3",
-		"dotenv": "^17.2.3",
-		"express": "^5.2.1",
-		"hono": "^4.9.9",
-		"zod": "^3.25.76"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^2.2.4",
-		"@types/eventsource": "^3.0.0",
-		"@types/node": "^24.5.2",
-		"eventsource": "^4.1.0",
-		"tsx": "^4.21.0",
-		"typescript": "5.9.2",
-		"wrangler": "^4.40.2"
-	}
+  "name": "alexa-mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "workerd"
+    ]
+  },
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint src scripts --ext .ts,.js",
+    "lint:fix": "eslint src scripts --ext .ts,.js --fix",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types",
+    "type-check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "start:node": "tsx src/express-index.ts",
+    "dev:node": "tsx --watch src/express-index.ts",
+    "get-cookies": "tsx scripts/get-cookies.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.7",
+    "@modelcontextprotocol/sdk": "1.25.1",
+    "@types/express": "^5.0.6",
+    "alexa-cookie2": "^5.0.3",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "hono": "^4.9.9",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/eventsource": "^3.0.0",
+    "@types/node": "^24.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eventsource": "^4.1.0",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "5.9.2",
+    "wrangler": "^4.40.2"
+  }
 }

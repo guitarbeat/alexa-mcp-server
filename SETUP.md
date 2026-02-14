@@ -5,9 +5,11 @@ Follow these steps to get your Alexa MCP server running in your preferred enviro
 ## 1. Local Setup
 
 ### Authentication
+
 The server requires Amazon session cookies. We provide a script to automate this:
 
 1. Clone the repository and install dependencies:
+
    ```bash
    git clone https://github.com/sijan2/alexa-mcp-server.git
    cd alexa-mcp-server
@@ -18,9 +20,10 @@ The server requires Amazon session cookies. We provide a script to automate this
    ```bash
    pnpm run get-cookies
    ```
-   *Follow the prompts and log in to your Amazon account.*
+   _Follow the prompts and log in to your Amazon account._
 
 ### Running the Server
+
 ```bash
 pnpm run dev:node
 ```
@@ -30,6 +33,7 @@ pnpm run dev:node
 We provide a production-ready Dockerfile.
 
 1. Build the image:
+
    ```bash
    docker build -t alexa-mcp-server .
    ```
@@ -53,10 +57,12 @@ The server is compatible with any Node.js hosting platform.
 ## 4. Cloudflare Workers
 
 To deploy to Cloudflare:
+
 ```bash
 pnpm run deploy
 ```
-*Note: Ensure you set your secrets using `wrangler secret put`*.
+
+_Note: Ensure you set your secrets using `wrangler secret put`_.
 
 ---
 

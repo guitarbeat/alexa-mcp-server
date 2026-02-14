@@ -1,11 +1,14 @@
 # Alexa Home Automation MCP Server 🏠🔋
 
-A powerful [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that provides AI agents (like Claude Desktop) with full control over your Alexa-connected smart home. 
+A powerful [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that provides AI agents (like Claude Desktop) with full control over your Alexa-connected smart home.
 
 This server acts as a bridge between the Alexa API and the MCP ecosystem, enabling capabilities like voice announcements, music control, lighting automation, and sensor monitoring.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blue.svg)](https://modelcontextprotocol.io/)
+[![CI](https://github.com/guitarbeat/alexa-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/guitarbeat/alexa-mcp-server/actions/workflows/ci.yml)
+[![Code Style: Airbnb](https://img.shields.io/badge/code_style-airbnb-brightgreen.svg)](https://github.com/airbnb/javascript)
+[![Code Style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
 ## ✨ Features
 
@@ -25,7 +28,7 @@ This server acts as a bridge between the Alexa API and the MCP ecosystem, enabli
 
 ### 2. Authentication (Automated Cookie Collection)
 
-We've automated the tedious process of collecting Amazon cookies. 
+We've automated the tedious process of collecting Amazon cookies.
 
 1. Install dependencies:
    ```bash
@@ -41,6 +44,7 @@ We've automated the tedious process of collecting Amazon cookies.
 ### 3. Local Development
 
 Start the server in Node.js mode:
+
 ```bash
 pnpm run dev:node
 ```
@@ -68,6 +72,7 @@ Add this to your Claude Desktop configuration (`claude_desktop_config.json`):
 ## 🏗️ Architecture
 
 This project is built using:
+
 - **Hono**: A fast, lightweight web framework.
 - **TypeScript**: For robust, type-safe development.
 - **MCP SDK**: To enable seamless integration with AI agents.
