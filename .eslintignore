@@ -1,0 +1,7 @@
+dist/
+node_modules/
+coverage/
+.wrangler/
+worker-configuration.d.ts
+src/**/*.js
+scripts/**/*.js
